@@ -1,1 +1,278 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ALVES.AnalisesV8</title><link rel="stylesheet" href="/styles.css"></head><body><div id="app"></div><script src="/scripts.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALVES.AnalisesV8</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07101d;color:#edf3ff;font:14px Arial,sans-serif}
+header{padding:22px 4%;background:#0c1627;border-bottom:1px solid #263653;position:sticky;top:0;z-index:20}
+h1{margin:0 0 5px;font-size:26px}.muted,.small{color:#9daac0}.small{font-size:12px}
+.wrap{max-width:1550px;margin:auto;padding:18px 4%}
+.card{background:#111c30;border:1px solid #293958;border-radius:14px;padding:16px;margin-bottom:16px}
+.bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:8px;padding:10px 13px;background:#35d789;color:#03130b;font-weight:700;cursor:pointer}
+.btn.alt{background:#263653;color:#fff}.btn.red{background:#ff6b6b;color:#260505}.btn.blue{background:#3977ff;color:#fff}
+.file{display:inline-block;background:#35d789;color:#03130b;font-weight:700;padding:10px 13px;border-radius:8px;cursor:pointer}.file input{display:none}
+.notice{padding:12px 14px;border-radius:10px;background:#14243b;border:1px solid #30405e;margin:10px 0}
+.notice strong{color:#35d789}.textarea{width:100%;min-height:220px;resize:vertical;background:#07101d;color:#dce8ff;border:1px solid #30405e;border-radius:9px;padding:12px;font:12px Consolas,monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px}.kpi{background:#18253d;border-radius:10px;padding:13px}.kpi b{display:block;font-size:20px;margin-top:6px}
+.green{color:#39e08b}.yellow{color:#ffd166}.redtxt{color:#ff7676}.blueTxt{color:#72a7ff}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.filters label{display:block}
+.select,.input{width:100%;background:#091323;color:#fff;border:1px solid #30405e;border-radius:8px;padding:10px}
+.progress{height:7px;background:#263653;border-radius:8px;overflow:hidden}.progress i{display:block;height:100%;background:#35d789}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#163b2b;color:#70f0b0;font-size:12px;margin:2px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #293957;text-align:center;font-size:13px}th{background:#17243b;color:#c3cde0}td:first-child,th:first-child{text-align:left}
+.hidden{display:none}.danger{color:#ff7777}.live{border-color:#ff3b4a}.liveTitle{display:flex;align-items:center;gap:9px}.dot{width:14px;height:14px;border-radius:50%;background:#ff1830;display:inline-block;box-shadow:0 0 12px #ff1830}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid #30405e;background:#0d192c;color:#dce8ff;padding:10px 13px;border-radius:9px;cursor:pointer;font-weight:700}.tab.active{background:#35d789;color:#03130b}
+.searchWrap{position:relative}.suggestions{position:absolute;top:100%;left:0;right:0;background:#0a1526;border:1px solid #395071;border-radius:8px;z-index:50;max-height:220px;overflow:auto}.suggestions div{padding:10px;cursor:pointer}.suggestions div:hover{background:#172a47}
+.scoreBox{font-size:25px;font-weight:800;text-align:center;background:#18253d;border-radius:10px;padding:14px}
+.signal{padding:12px;border-radius:10px;background:#18253d;border-left:4px solid #35d789;margin:8px 0}.signal.warn{border-left-color:#ffd166}.signal.bad{border-left-color:#ff6b6b}
+.adminGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.adminItem{background:#18253d;padding:14px;border-radius:10px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:100}.modalBox{width:min(430px,92vw);background:#111c30;border:1px solid #3b4e70;border-radius:14px;padding:20px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}header{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚽ ALVES.AnalisesV8</h1>
+  <div class="muted">Análise pré-jogo + análise ao vivo + banco de ligas + administração</div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('home',this)">🏠 Análises</button>
+    <button class="tab" onclick="showTab('import',this)">📁 CSV / Banco</button>
+    <button class="tab" onclick="showAdminLogin()">⚙️ ADMIN</button>
+  </div>
+
+  <section id="homeTab">
+    <div class="card">
+      <h2>📊 ANÁLISE PRÉ-JOGO</h2>
+      <div class="filters">
+        <label>Liga<select id="preLeague" class="select"></select></label>
+        <label>Casa<div class="searchWrap"><input id="preHomeSearch" class="input" placeholder="Digite o começo do time..."><div id="preHomeSug" class="suggestions hidden"></div></div></label>
+        <label>Fora<div class="searchWrap"><input id="preAwaySearch" class="input" placeholder="Digite o começo do time..."><div id="preAwaySug" class="suggestions hidden"></div></div></label>
+      </div>
+      <div id="preSelected" class="notice">Selecione uma liga e os dois times para gerar a análise.</div>
+      <div id="preAnalysis"></div>
+    </div>
+
+    <div class="card live">
+      <div class="liveTitle"><span class="dot"></span><h2>ANÁLISE AO VIVO</h2></div>
+      <p class="muted">Escolha uma liga salva e os times. O histórico é buscado automaticamente no banco e os números atuais da partida complementam a leitura.</p>
+      <div class="filters">
+        <label>Liga<select id="liveLeague" class="select"></select></label>
+        <label>Casa<div class="searchWrap"><input id="liveHomeSearch" class="input" placeholder="Ex.: Cor..."><div id="liveHomeSug" class="suggestions hidden"></div></div></label>
+        <label>Fora<div class="searchWrap"><input id="liveAwaySearch" class="input" placeholder="Ex.: Fla..."><div id="liveAwaySug" class="suggestions hidden"></div></div></label>
+        <label>Minuto<input id="liveMinute" class="input" type="number" min="0" max="130" value="0"></label>
+        <label>Placar Casa<input id="liveHG" class="input" type="number" min="0" value="0"></label>
+        <label>Placar Fora<input id="liveAG" class="input" type="number" min="0" value="0"></label>
+        <label>Cantos Casa<input id="liveHC" class="input" type="number" min="0" value="0"></label>
+        <label>Cantos Fora<input id="liveAC" class="input" type="number" min="0" value="0"></label>
+        <label>Ataques Perigosos<input id="liveDA" class="input" type="number" min="0" value="0"></label>
+        <label>Finalizações<input id="liveSH" class="input" type="number" min="0" value="0"></label>
+        <label>Chutes no Gol<input id="liveSOT" class="input" type="number" min="0" value="0"></label>
+        <label>Amarelos<input id="liveYC" class="input" type="number" min="0" value="0"></label>
+        <label>Vermelhos<input id="liveRC" class="input" type="number" min="0" value="0"></label>
+      </div>
+      <div class="bar" style="margin-top:12px">
+        <button class="btn" onclick="analyzeLive()">⚡ Analisar ao vivo</button>
+        <button class="btn alt" onclick="clearLive()">Limpar números</button>
+      </div>
+      <div id="liveResult"></div>
+    </div>
+  </section>
+
+  <section id="importTab" class="hidden">
+    <div class="card">
+      <h2>📁 BANCO DE DADOS / CSV</h2>
+      <div class="notice"><strong>Importação automática:</strong> carregue o CSV original do Football-Data.co.uk. A V8 identifica a liga pelo código/nome quando possível, salva os times e jogos no IndexedDB e substitui o CSV anterior da mesma liga.</div>
+      <div class="filters">
+        <label>Arquivo CSV<label class="file">📁 Abrir CSV<input id="file" type="file" accept=".csv,.txt"></label></label>
+        <label>Temporada (opcional)<input id="manualSeason" class="input" placeholder="Ex.: 2026"></label>
+      </div>
+      <textarea id="csvText" class="textarea" placeholder="Cole aqui o CSV completo..."></textarea>
+      <div class="bar" style="margin-top:10px">
+        <button class="btn" onclick="processCSV()">⚡ Processar CSV</button>
+        <button class="btn alt" onclick="loadExample()">Ver exemplo</button>
+        <button class="btn alt" onclick="clearPaste()">Limpar</button>
+        <button class="btn red" onclick="wipe()">Apagar todas as ligas</button>
+      </div>
+      <div id="importResult" class="result small"></div>
+    </div>
+    <div id="database" class="card"></div>
+  </section>
+
+  <section id="adminTab" class="hidden">
+    <div id="adminContent"></div>
+  </section>
+</div>
+
+<div id="loginModal" class="modal hidden">
+  <div class="modalBox">
+    <h2>🔐 Acesso Administrativo</h2>
+    <p class="muted">Modo local da versão standalone. O painel controla o banco deste navegador.</p>
+    <input id="adminPin" class="input" type="password" placeholder="PIN administrativo">
+    <div class="bar" style="margin-top:12px">
+      <button class="btn" onclick="loginAdmin()">Entrar</button>
+      <button class="btn alt" onclick="closeLogin()">Cancelar</button>
+    </div>
+    <p class="small">PIN inicial: <b>2580</b>. Altere no painel Admin.</p>
+  </div>
+</div>
+
+<script>
+const DB_NAME="ALVES.AnalisesV8DB", DB_VERSION=2;
+const STORE="competitions", SETTINGS="settings", USERS="users";
+let db=null, games=[], sourceMeta={country:"Não identificado",league:"Não identificada",season:"",source:"Football-Data.co.uk",code:"",file:""}, currentKey="", selectedFileName="", activeLeagueKey="";
+let adminLogged=false;
+
+const ALIASES={
+ date:["Date","date","Data","MatchDate"],time:["Time","time"],
+ home:["HomeTeam","home","Home","Mandante"],away:["AwayTeam","away","Away","Visitante"],
+ hg:["FTHG","home_goals","HG"],ag:["FTAG","away_goals","AG"],ftr:["FTR","result"],
+ hthg:["HTHG","ht_home_goals"],htag:["HTAG","ht_away_goals"],htr:["HTR"],
+ referee:["Referee","Arbitro","Árbitro"],
+ hs:["HS","HomeShots"],as:["AS","AwayShots"],hst:["HST","HomeShotsOnTarget"],ast:["AST","AwayShotsOnTarget"],
+ hf:["HF","HomeFouls"],af:["AF","AwayFouls"],hc:["HC","HomeCorners"],ac:["AC","AwayCorners"],
+ hy:["HY","HomeYellow"],ay:["AY","AwayYellow"],hr:["HR","HomeRed"],ar:["AR","AwayRed"],
+ b365h:["B365H"],b365d:["B365D"],b365a:["B365A"],bwh:["BWH"],bwd:["BWD"],bwa:["BWA"],
+ psh:["PSH"],psd:["PSD"],psa:["PSA"],avgh:["AvgH"],avgd:["AvgD"],avga:["AvgA"]
+};
+const COMPETITIONS={
+ E0:["England","Premier League"],E1:["England","Championship"],E2:["England","League One"],E3:["England","League Two"],E4:["England","National League"],
+ D1:["Germany","Bundesliga 1"],D2:["Germany","Bundesliga 2"],I1:["Italy","Serie A"],I2:["Italy","Serie B"],
+ SP1:["Spain","La Liga"],SP2:["Spain","La Liga 2"],F1:["France","Ligue 1"],F2:["France","Ligue 2"],
+ N1:["Netherlands","Eredivisie"],N2:["Netherlands","Eerste Divisie"],P1:["Portugal","Primeira Liga"],B1:["Belgium","Jupiler League"],
+ SC0:["Scotland","Premiership"],SC1:["Scotland","Championship"],G1:["Greece","Super League"],T1:["Turkey","Super Lig"],
+ A1:["Austria","Bundesliga"],SW1:["Switzerland","Super League"],AUT:["Australia","A-League"],BRA:["Brazil","Serie A"],ARG:["Argentina","Primera Division"],MEX:["Mexico","Liga MX"],USA:["USA","MLS"]
+};
+
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;
+ if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"key"});s.createIndex("updatedAt","updatedAt");}
+ if(!d.objectStoreNames.contains(SETTINGS))d.createObjectStore(SETTINGS,{keyPath:"key"});
+ if(!d.objectStoreNames.contains(USERS))d.createObjectStore(USERS,{keyPath:"id"});
+};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}
+function tx(store,mode="readonly"){return db.transaction(store,mode).objectStore(store)}
+function dbAll(store=STORE){return new Promise((res,rej)=>{let r=tx(store).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+function dbPut(obj,store=STORE){return new Promise((res,rej)=>{let r=tx(store,"readwrite").put(obj);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function dbDelete(key,store=STORE){return new Promise((res,rej)=>{let r=tx(store,"readwrite").delete(key);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function clean(x){return String(x??"").replace(/^\uFEFF/,"").replace(/^"|"$/g,"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"")}
+function num(x){let v=parseFloat(String(x??"").trim().replace(",","."));return Number.isFinite(v)?v:0}
+function nnull(x){let v=parseFloat(String(x??"").trim().replace(",","."));return Number.isFinite(v)?v:null}
+function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+function separator(line){let c=(line.match(/,/g)||[]).length,s=(line.match(/;/g)||[]).length,t=(line.match(/\t/g)||[]).length;return t>=c&&t>=s&&t?"\t":s>c?";":","}
+function split(line,sep){let a=[],cur="",q=false;for(let i=0;i<line.length;i++){let ch=line[i];if(ch==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(ch===sep&&!q){a.push(cur.trim());cur=""}else cur+=ch}a.push(cur.trim());return a.map(x=>x.replace(/^"|"$/g,""))}
+function idx(headers,aliases){for(const a of aliases){let i=headers.indexOf(clean(a));if(i>=0)return i}return -1}
+function dateKey(v){let s=String(v||"").trim(),m=s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);if(m){let y=+m[3];if(y<100)y+=y<30?2000:1900;return y*10000+(+m[2])*100+(+m[1])}let d=new Date(s);return isNaN(d)?0:d.getTime()}
+function inferCompetition(name,text){let n=String(name||"").toUpperCase().replace(/\.CSV$/,""),m=n.match(/(?:^|[^A-Z])(E0|E1|E2|E3|E4|D1|D2|I1|I2|SP1|SP2|F1|F2|N1|N2|P1|B1|SC0|SC1|G1|T1|A1|SW1|AUT|BRA|ARG|MEX|USA)(?:[^A-Z]|$)/);if(m&&COMPETITIONS[m[1]])return {country:COMPETITIONS[m[1]][0],league:COMPETITIONS[m[1]][1],code:m[1]};
+ let l=(text||"").toLowerCase();for(const [re,c] of [[/\bpremier league\b/,"England"],[/\bbundesliga\b/,"Germany"],[/\bserie a\b/,"Italy"],[/\bla liga\b/,"Spain"]])if(re.test(l))return {country:c,league:"Identificada pelo conteúdo",code:""};return {country:"Não identificado",league:"Não identificada",code:""}}
+function parseCSV(text){let lines=String(text||"").replace(/\r/g,"").split("\n").filter(x=>x.trim());if(!lines.length)return {rows:[],detected:false};let sep=separator(lines[0]),raw=split(lines[0],sep),headers=raw.map(clean),I={};for(const k in ALIASES)I[k]=idx(headers,ALIASES[k]);let detected=I.home>=0&&I.away>=0&&I.hg>=0&&I.ag>=0,rows=[];
+ for(let r=1;r<lines.length;r++){let c=split(lines[r],sep);if(c.length<2)continue;let get=k=>I[k]>=0?(c[I[k]]??""):"";let home=get("home"),away=get("away");if(!home||!away)continue;
+ rows.push({date:get("date"),time:get("time"),home,away,hg:num(get("hg")),ag:num(get("ag")),ftr:get("ftr"),hthg:num(get("hthg")),htag:num(get("htag")),htr:get("htr"),referee:get("referee"),hs:num(get("hs")),as:num(get("as")),hst:num(get("hst")),ast:num(get("ast")),hf:num(get("hf")),af:num(get("af")),hc:num(get("hc")),ac:num(get("ac")),hy:num(get("hy")),ay:num(get("ay")),hr:num(get("hr")),ar:num(get("ar")),b365h:nnull(get("b365h")),b365d:nnull(get("b365d")),b365a:nnull(get("b365a")),psh:nnull(get("psh")),psd:nnull(get("psd")),psa:nnull(get("psa"))})}
+ return {rows,detected,headers}}
+function detectSeason(rows){let ys=rows.map(g=>{let k=dateKey(g.date);return k?Math.floor(k/10000):0}).filter(Boolean);if(!ys.length)return "";let a=Math.min(...ys),b=Math.max(...ys);return a===b?String(a):`${a}/${String(b).slice(-2)}`}
+function competitionKey(meta){return String(meta.code||((meta.country||"unknown")+"|"+(meta.league||"unknown"))).toLowerCase().replace(/[^a-z0-9|]+/g,"_")}
+async function processCSV(){let text=document.getElementById("csvText").value;if(!text.trim())return alert("Cole o CSV primeiro.");let p=parseCSV(text);if(!p.rows.length||!p.detected)return alert("CSV não reconhecido. É necessário Date, HomeTeam, AwayTeam, FTHG e FTAG.");
+ let meta=inferCompetition(selectedFileName,text);meta={...meta,season:document.getElementById("manualSeason").value.trim()||detectSeason(p.rows),source:"Football-Data.co.uk",file:selectedFileName||"CSV colado"};let key=competitionKey(meta);let all=await dbAll();let previous=all.find(x=>x.key===key);
+ games=p.rows.slice().sort((a,b)=>dateKey(a.date)-dateKey(b.date));sourceMeta=meta;currentKey=key;activeLeagueKey=key;
+ await dbPut({key,country:meta.country,league:meta.league,season:meta.season,code:meta.code||"",source:meta.source,file:meta.file,games,updatedAt:Date.now()});
+ document.getElementById("importResult").innerHTML=`<span class="badge">CSV salvo</span><span class="badge">${p.rows.length} jogos</span><span class="badge">${previous?"Liga atualizada — anterior substituído":"Nova liga criada"}</span><br><br><b>${esc(meta.country)} → ${esc(meta.league)}</b> · Temporada: <b>${esc(meta.season||"não identificada")}</b>`;
+ await refresh();showTab("home",document.querySelector(".tab"));}
+
+async function loadCompetition(key){let c=(await dbAll()).find(x=>x.key===key);if(!c)return;currentKey=key;activeLeagueKey=key;games=c.games||[];sourceMeta={country:c.country,league:c.league,season:c.season,code:c.code,source:c.source,file:c.file};await refresh()}
+async function wipe(){if(!confirm("Apagar TODAS as ligas e jogos salvos?"))return;for(const c of await dbAll())await dbDelete(c.key);games=[];currentKey="";activeLeagueKey="";renderDatabase();renderSelectors();document.getElementById("importResult").textContent="Banco apagado."}
+function clearPaste(){csvText.value="";importResult.textContent=""}
+function loadExample(){csvText.value=`Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,FTR,HTHG,HTAG,HTR,Referee,HS,AS,HST,AST,HF,AF,HC,AC,HY,AY,HR,AR
+01/08/2026,15:00,Arsenal,Liverpool,2,1,H,1,0,H,Ref A,14,9,6,3,11,10,7,4,2,3,0,0
+08/08/2026,17:30,Liverpool,Chelsea,2,2,D,1,1,D,Ref B,12,10,5,5,9,12,6,5,3,4,0,0
+15/08/2026,16:00,Manchester City,Liverpool,1,2,A,0,1,A,Ref C,16,8,7,4,8,13,5,7,1,2,0,0`;importResult.textContent="Exemplo pronto."}
+
+function getCompetitions(){return dbAll()}
+async function renderDatabase(){let el=document.getElementById("database");if(!el||!db)return;let all=await dbAll();all.sort((a,b)=>b.updatedAt-a.updatedAt);if(!all.length){el.innerHTML="<h2>🗄️ Banco de ligas</h2><p class='muted'>Nenhuma liga salva.</p>";return}
+ el.innerHTML=`<h2>🗄️ Ligas salvas</h2><p class="small">Os CSVs ficam no IndexedDB deste navegador. Atualizar o mesmo código de liga substitui a base anterior.</p><div style="overflow:auto"><table><tr><th>País</th><th>Liga</th><th>Temporada</th><th>Jogos</th><th>Atualização</th><th>Ação</th></tr>${all.map(c=>`<tr><td>${esc(c.country)}</td><td>${esc(c.league)}</td><td>${esc(c.season||"-")}</td><td>${(c.games||[]).length}</td><td>${new Date(c.updatedAt).toLocaleString("pt-BR")}</td><td><button class="btn alt" onclick="loadCompetition('${esc(c.key)}')">Abrir</button> <button class="btn red" onclick="deleteCompetition('${esc(c.key)}')">Excluir</button></td></tr>`).join("")}</table></div>`}
+async function deleteCompetition(key){if(!confirm("Excluir esta liga?"))return;await dbDelete(key);let all=await dbAll();if(key===currentKey){games=[];currentKey="";activeLeagueKey="";if(all.length)await loadCompetition(all.sort((a,b)=>b.updatedAt-a.updatedAt)[0].key)}await refresh()}
+function teamsFor(gameset=games){return [...new Set(gameset.flatMap(g=>[g.home,g.away]))].sort((a,b)=>a.localeCompare(b,"pt-BR"))}
+function teamGames(t,venue="all",limit=20){let a=games.filter(g=>g.home===t||g.away===t);if(venue==="home")a=a.filter(g=>g.home===t);if(venue==="away")a=a.filter(g=>g.away===t);return a.sort((x,y)=>dateKey(y.date)-dateKey(x.date)).slice(0,limit).map(g=>{let home=g.home===t;return {g,gf:home?g.hg:g.ag,ga:home?g.ag:g.hg,cf:home?g.hc:g.ac,ca:home?g.ac:g.hc,card:home?g.hy:g.ay,red:home?g.hr:g.ar,shots:home?g.hs:g.as,sot:home?g.hst:g.ast}})}
+function avg(a,k){return a.length?a.reduce((s,x)=>s+(Number(x[k])||0),0)/a.length:0}
+function pct(a,f){return a.length?a.filter(f).length/a.length*100:0}
+function stat(t,venue="all",limit=10){let a=teamGames(t,venue,limit),gt=a.map(x=>x.gf+x.ga),ct=a.map(x=>x.cf+x.ca),cards=a.map(x=>x.card),ht=a.map(x=>(x.g.hthg||0)+(x.g.htag||0));return {t,a,gf:avg(a,"gf"),ga:avg(a,"ga"),cf:avg(a,"cf"),ca:avg(a,"ca"),cards:avg(a,"card"),reds:avg(a,"red"),shots:avg(a,"shots"),sot:avg(a,"sot"),ht05:pct(ht,x=>x>=1),ht15:pct(ht,x=>x>=2),o15:pct(gt,x=>x>=2),o25:pct(gt,x=>x>=3),o35:pct(gt,x=>x>=4),c8:pct(ct,x=>x>=8),c9:pct(ct,x=>x>=9),c10:pct(ct,x=>x>=10),card4:pct(cards,x=>x>=4),card5:pct(cards,x=>x>=5),btts:pct(a,x=>x.g.hg>0&&x.g.ag>0)}}
+function prog(v){return `<div class="progress"><i style="width:${Math.max(0,Math.min(100,v))}%"></i></div>`}
+function form(t,venue,limit=10){let s=stat(t,venue,limit);return s}
+function h2h(h,a,limit=10){return games.filter(g=>(g.home===h&&g.away===a)||(g.home===a&&g.away===h)).sort((x,y)=>dateKey(y.date)-dateKey(x.date)).slice(0,limit)}
+
+function preAnalyze(h,a){if(!h||!a||h===a){preSelected.textContent="Selecione dois times diferentes.";preAnalysis.innerHTML="";return}
+ let x=stat(h,"home",10),y=stat(a,"away",10),hh=h2h(h,a,10),o25=(x.o25+y.o25)/2,btts=(x.btts+y.btts)/2,c9=(x.c9+y.c9)/2,ht=(x.ht05+y.ht05)/2;
+ preSelected.innerHTML=`<b>🏟️ ${esc(h)} × ${esc(a)}</b><br><span class="small">${esc(sourceMeta.league)} · histórico: até 10 jogos por equipe</span>`;
+ preAnalysis.innerHTML=`<div class="card"><div class="kpis"><div class="kpi">Gols proj.<b>${((x.gf+y.gf)/2).toFixed(2)}</b></div><div class="kpi">Cantos proj.<b>${((x.cf+x.ca+y.cf+y.ca)/2).toFixed(2)}</b></div><div class="kpi">Over 0.5 HT<b>${ht.toFixed(0)}%</b></div><div class="kpi">Over 2.5<b>${o25.toFixed(0)}%</b></div><div class="kpi">9+ cantos<b>${c9.toFixed(0)}%</b></div><div class="kpi">BTTS<b>${btts.toFixed(0)}%</b></div></div>
+ <div class="grid" style="margin-top:16px">${preBlock(x)}${preBlock(y)}</div>
+ <div class="signal">${hh.length?`🤝 ${hh.length} confronto(s) direto(s) encontrado(s) no banco.`:"⚠️ Não há H2H suficiente; nenhuma estatística H2H será inventada."}</div></div>`}
+function preBlock(s){return `<div class="card"><h3>📊 ${esc(s.t)}</h3><div class="kpis"><div class="kpi">Gols pró<b>${s.gf.toFixed(2)}</b></div><div class="kpi">Gols contra<b>${s.ga.toFixed(2)}</b></div><div class="kpi">Cantos pró<b>${s.cf.toFixed(2)}</b></div><div class="kpi">Chutes<b>${s.shots.toFixed(2)}</b></div><div class="kpi">No gol<b>${s.sot.toFixed(2)}</b></div><div class="kpi">Cartões<b>${s.cards.toFixed(2)}</b></div></div>
+ <p>Over 1.5 gols: <b>${s.o15.toFixed(0)}%</b>${prog(s.o15)}</p><p>Over 2.5 gols: <b>${s.o25.toFixed(0)}%</b>${prog(s.o25)}</p><p>9+ cantos: <b>${s.c9.toFixed(0)}%</b>${prog(s.c9)}</p><p>5+ cartões: <b>${s.card5.toFixed(0)}%</b>${prog(s.card5)}</p></div>`}
+
+function liveValues(){return {minute:num(liveMinute.value),hg:num(liveHG.value),ag:num(liveAG.value),hc:num(liveHC.value),ac:num(liveAC.value),danger:num(liveDA.value),shots:num(liveSH.value),sot:num(liveSOT.value),yellow:num(liveYC.value),red:num(liveRC.value)}}
+function analyzeLive(){let h=liveHomeSearch.dataset.team,a=liveAwaySearch.dataset.team,v=liveValues();if(!h||!a||h===a)return liveResult.innerHTML=`<div class="notice danger">Selecione os dois times na liga antes de analisar.</div>`;
+ let hs=stat(h,"home",10),as=stat(a,"away",10),histGoals=(hs.gf+hs.ga+as.gf+as.ga)/2,histCorners=(hs.cf+hs.ca+as.cf+as.ca)/2,histCards=(hs.cards+as.cards)/2,histShots=(hs.shots+as.shots)/2,histSot=(hs.sot+as.sot)/2;
+ let totalCorners=v.hc+v.ac,totalGoals=v.hg+v.ag,totalShots=v.shots,totalSot=v.sot,totalCards=v.yellow+v.red;
+ let elapsed=Math.max(1,Math.min(130,v.minute||1)), remaining=Math.max(0,90-elapsed);
+ let cornerRate=totalCorners/elapsed*90,shotRate=totalShots/elapsed*90,sotRate=totalSot/elapsed*90,cardRate=totalCards/elapsed*90;
+ let pressure=Math.min(100,Math.round((v.danger*1.2+v.sot*4+v.shots*1.2+totalCorners*2.2+totalGoals*6+totalCards*2)/(1+elapsed/20)));
+ let goalSignal=Math.min(99,Math.max(5,Math.round(45+((histGoals*0.25)+(shotRate*0.08)+(sotRate*0.7)+(pressure*0.18)-(totalGoals*5)))));
+ let cornerSignal=Math.min(99,Math.max(5,Math.round(40+((histCorners*4)+(cornerRate*0.8)+(v.danger*0.15)+(v.sot*0.5)-totalCorners*1.5))));
+ let cardSignal=Math.min(99,Math.max(5,Math.round(35+histCards*7+cardRate*1.2+v.danger*.03-totalCards*2)));
+ let intensity=Math.min(100,Math.round((pressure*.55)+(shotRate*1.2)+(sotRate*2)+(cornerRate*.7)));
+ let level=n=>n>=75?"FORTE":n>=60?"FAVORÁVEL":n>=45?"MODERADO":"BAIXO";
+ let projection=(rate)=>Math.max(0,Math.round(rate*remaining/90));
+ let read=`Aos ${elapsed}', o jogo registra ${totalGoals} gol(s), ${totalCorners} escanteio(s), ${totalShots} finalização(ões), ${totalSot} chute(s) no gol e ${totalCards} cartão(ões). `;
+ if(intensity>=70)read+="O ritmo informado está alto e os eventos ofensivos atuais estão acima do que seria esperado para um jogo de baixa intensidade.";
+ else if(intensity>=50)read+="Há atividade relevante, mas o ritmo ainda não caracteriza pressão muito alta.";
+ else read+="Os números atuais ainda não sustentam uma leitura de pressão muito forte.";
+ liveResult.innerHTML=`<div class="card" style="margin-top:16px"><h2>🔴 ${esc(h)} × ${esc(a)} — ${elapsed}'</h2><div class="scoreBox">${v.hg} × ${v.ag}</div>
+ <div class="kpis" style="margin-top:12px"><div class="kpi">Intensidade<b>${intensity}/100</b></div><div class="kpi">Escanteios<b>${totalCorners}</b></div><div class="kpi">Finalizações<b>${totalShots}</b></div><div class="kpi">No gol<b>${totalSot}</b></div><div class="kpi">Cartões<b>${totalCards}</b></div></div>
+ <div class="signal">${read}</div>
+ <div class="grid"><div class="card"><h3>⚽ Gols</h3><p>Nível: <b>${level(goalSignal)}</b></p><p>Indicador estatístico: <b>${goalSignal}%</b>${prog(goalSignal)}</p><p>Projeção de gols adicionais pelo ritmo atual: <b>até ${projection(Math.max(.01,goalSignal/100))}</b></p></div>
+ <div class="card"><h3>🚩 Escanteios</h3><p>Nível: <b>${level(cornerSignal)}</b></p><p>Indicador: <b>${cornerSignal}%</b>${prog(cornerSignal)}</p><p>Ritmo projetado em 90': <b>${cornerRate.toFixed(1)}</b></p></div>
+ <div class="card"><h3>🟨 Cartões</h3><p>Nível: <b>${level(cardSignal)}</b></p><p>Indicador: <b>${cardSignal}%</b>${prog(cardSignal)}</p><p>Ritmo projetado em 90': <b>${cardRate.toFixed(1)}</b></p></div>
+ <div class="card"><h3>🎯 Volume ofensivo</h3><p>Chutes projetados em 90': <b>${shotRate.toFixed(1)}</b></p><p>Chutes no gol projetados: <b>${sotRate.toFixed(1)}</b></p><p>Ataques perigosos informados: <b>${v.danger}</b></p></div></div>
+ <div class="notice small">Esta leitura combina histórico dos times salvo no CSV com os números que você informa para a partida. É uma projeção estatística, não um feed oficial minuto a minuto nem garantia de resultado.</div></div>`}
+
+function clearLive(){["liveHG","liveAG","liveHC","liveAC","liveDA","liveSH","liveSOT","liveYC","liveRC"].forEach(id=>document.getElementById(id).value=0);liveMinute.value=0;liveResult.innerHTML=""}
+
+function showSuggestions(input,sug,which){let q=input.value.toLowerCase().trim(),arr=teamsFor(games).filter(t=>!q||t.toLowerCase().startsWith(q)).slice(0,12);sug.innerHTML=arr.map(t=>`<div onclick="pickTeam('${which}','${esc(t)}')">${esc(t)}</div>`).join("");sug.classList.toggle("hidden",!arr.length)}
+function pickTeam(which,t){let input=document.getElementById(which+"Search"),sug=document.getElementById(which+"Sug");input.value=t;input.dataset.team=t;sug.classList.add("hidden");if(which==="preHome"||which==="preAway")preAnalyze(preHomeSearch.dataset.team,preAwaySearch.dataset.team)}
+function setupSearch(prefix){let i=document.getElementById(prefix+"Search"),s=document.getElementById(prefix+"Sug");i.addEventListener("input",()=>showSuggestions(i,s,prefix));i.addEventListener("focus",()=>showSuggestions(i,s,prefix));}
+function renderSelectors(){dbAll().then(all=>{let opts=all.map(c=>`<option value="${esc(c.key)}">${esc(c.country)} — ${esc(c.league)} (${esc(c.season||"-")})</option>`).join("");preLeague.innerHTML=`<option value="">Selecione a liga...</option>`+opts;liveLeague.innerHTML=`<option value="">Selecione a liga...</option>`+opts;if(activeLeagueKey){preLeague.value=activeLeagueKey;liveLeague.value=activeLeagueKey}})}
+function switchLeague(key,mode){loadCompetition(key).then(()=>{if(mode==="live"){liveHomeSearch.value="";liveAwaySearch.value="";liveHomeSearch.dataset.team="";liveAwaySearch.dataset.team=""}else{preHomeSearch.value="";preAwaySearch.value="";preHomeSearch.dataset.team="";preAwaySearch.dataset.team=""}})}
+function showTab(name,btn){document.getElementById("homeTab").classList.toggle("hidden",name!=="home");document.getElementById("importTab").classList.toggle("hidden",name!=="import");document.getElementById("adminTab").classList.toggle("hidden",name!=="admin");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active")}
+function showAdminLogin(){if(adminLogged){showTab("admin");renderAdmin();return}loginModal.classList.remove("hidden")}
+function closeLogin(){loginModal.classList.add("hidden")}
+async function loginAdmin(){let s=(await dbAll(SETTINGS)).find(x=>x.key==="adminPin");let pin=s?s.value:"2580";if(adminPin.value!==pin)return alert("PIN incorreto.");adminLogged=true;closeLogin();showTab("admin");renderAdmin()}
+async function renderAdmin(){let comps=await dbAll(),users=await dbAll(USERS),pinObj=(await dbAll(SETTINGS)).find(x=>x.key==="adminPin");document.getElementById("adminContent").innerHTML=`<div class="card"><h2>⚙️ PAINEL ADMINISTRATIVO</h2><p class="muted">Todas as configurações locais da V8 ficam aqui.</p><div class="adminGrid">
+<div class="adminItem"><b>👥 Usuários</b><div style="font-size:25px;margin-top:7px">${users.length}</div></div>
+<div class="adminItem"><b>🏆 Ligas</b><div style="font-size:25px;margin-top:7px">${comps.length}</div></div>
+<div class="adminItem"><b>⚽ Jogos</b><div style="font-size:25px;margin-top:7px">${comps.reduce((n,c)=>n+(c.games||[]).length,0)}</div></div>
+<div class="adminItem"><b>💾 Banco</b><div class="green" style="margin-top:7px">ATIVO</div></div></div></div>
+<div class="card"><h2>📁 Administração de CSV</h2><p>Use a aba CSV/Banco para importar, atualizar e excluir ligas. O mesmo código de competição substitui a base anterior.</p><button class="btn" onclick="showTab('import',document.querySelectorAll('.tab')[1])">Abrir gerenciamento CSV</button></div>
+<div class="card"><h2>👥 Usuários</h2><div class="bar"><input id="newUserName" class="input" style="max-width:220px" placeholder="Nome"><input id="newUserEmail" class="input" style="max-width:260px" placeholder="Email"><button class="btn" onclick="addUser()">Adicionar usuário</button></div><div style="overflow:auto;margin-top:12px"><table><tr><th>Nome</th><th>Email</th><th>Status</th><th>Ações</th></tr>${users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${u.blocked?"🚫 Bloqueado":"✅ Ativo"}</td><td><button class="btn ${u.blocked?"":"red"}" onclick="toggleUser('${esc(u.id)}')">${u.blocked?"Desbloquear":"Bloquear"}</button> <button class="btn red" onclick="deleteUser('${esc(u.id)}')">Excluir</button></td></tr>`).join("")}</table></div></div>
+<div class="card"><h2>🔐 Segurança do Admin</h2><p class="small">PIN atual: ${pinObj?"configurado":"padrão 2580"}</p><div class="bar"><input id="newPin" class="input" style="max-width:180px" placeholder="Novo PIN" type="password"><button class="btn blue" onclick="changePin()">Alterar PIN</button></div><p class="small danger">Este arquivo é standalone. O painel é uma administração local do navegador; para usuários reais em vários computadores é necessário um backend/servidor.</p></div>
+<div class="card"><h2>🧠 Parâmetros extras</h2><div class="filters"><label>Peso histórico <input id="wHist" class="input" type="number" min="0" max="100" value="${getSettingSync("wHist",40)}"></label><label>Peso forma <input id="wForm" class="input" type="number" min="0" max="100" value="${getSettingSync("wForm",30)}"></label><label>Peso ao vivo <input id="wLive" class="input" type="number" min="0" max="100" value="${getSettingSync("wLive",30)}"></label></div><button class="btn" style="margin-top:10px" onclick="saveWeights()">Salvar parâmetros</button></div>`}
+async function addUser(){let n=newUserName.value.trim(),e=newUserEmail.value.trim();if(!n||!e)return alert("Informe nome e email.");await dbPut({id:"u_"+Date.now(),name:n,email:e,blocked:false,createdAt:Date.now()},USERS);renderAdmin()}
+async function toggleUser(id){let u=(await dbAll(USERS)).find(x=>x.id===id);if(u){u.blocked=!u.blocked;await dbPut(u,USERS);renderAdmin()}}
+async function deleteUser(id){if(confirm("Excluir usuário?")){await dbDelete(id,USERS);renderAdmin()}}
+function getSettingSync(key,def){return window._settings&&window._settings[key]!=null?window._settings[key]:def}
+async function loadSettings(){let a=await dbAll(SETTINGS);window._settings={};a.forEach(x=>window._settings[x.key]=x.value);if(!a.find(x=>x.key==="adminPin"))await dbPut({key:"adminPin",value:"2580"},SETTINGS)}
+async function changePin(){let p=newPin.value.trim();if(p.length<4)return alert("Use pelo menos 4 caracteres.");await dbPut({key:"adminPin",value:p},SETTINGS);alert("PIN alterado.")}
+async function saveWeights(){for(const k of ["wHist","wForm","wLive"])await dbPut({key:k,value:Number(document.getElementById(k).value)},SETTINGS);await loadSettings();alert("Parâmetros salvos.")}
+async function refresh(){renderSelectors();renderDatabase();if(activeLeagueKey){let all=await dbAll(),c=all.find(x=>x.key===activeLeagueKey);if(c){games=c.games||[];sourceMeta={country:c.country,league:c.league,season:c.season,code:c.code,source:c.source,file:c.file}}}}
+document.getElementById("file").addEventListener("change",e=>{let f=e.target.files[0];if(!f)return;selectedFileName=f.name;let r=new FileReader();r.onload=()=>{csvText.value=r.result;importResult.innerHTML=`Arquivo <b>${esc(f.name)}</b> carregado. Clique em Processar CSV.`};r.readAsText(f,"UTF-8")});
+preLeague.addEventListener("change",()=>switchLeague(preLeague.value,"pre"));
+liveLeague.addEventListener("change",()=>switchLeague(liveLeague.value,"live"));
+setupSearch("preHome");setupSearch("preAway");setupSearch("liveHome");setupSearch("liveAway");
+["liveMinute","liveHG","liveAG","liveHC","liveAC","liveDA","liveSH","liveSOT","liveYC","liveRC"].forEach(id=>document.getElementById(id).addEventListener("change",()=>{}));
+(async()=>{try{await openDB();await loadSettings();let all=await dbAll();if(all.length){all.sort((a,b)=>b.updatedAt-a.updatedAt);await loadCompetition(all[0].key)}else{renderSelectors();renderDatabase()}}catch(e){console.error(e);alert("Erro ao abrir o banco local: "+e.message)}})();
+</script>
+</body>
+</html>
