@@ -111,18 +111,55 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px so
   </section>
 </div>
 
-<div id="loginModal" class="modal hidden">
-  <div class="modalBox">
-    <h2>🔐 Acesso Administrativo</h2>
-    <p class="muted">Modo local da versão standalone. O painel controla o banco deste navegador.</p>
-    <input id="adminPin" class="input" type="password" placeholder="PIN administrativo">
-    <div class="bar" style="margin-top:12px">
-      <button class="btn" onclick="loginAdmin()">Entrar</button>
-      <button class="btn alt" onclick="closeLogin()">Cancelar</button>
-    </div>
-    <p class="small">PIN inicial: <b>2580</b>. Altere no painel Admin.</p>
-  </div>
-</div>
+function openLogin() {
+  const loginModal = document.getElementById("loginModal");
+  if (loginModal) {
+    loginModal.classList.remove("hidden");
+    loginModal.style.display = "flex";
+  }
+}
+
+function closeLogin() {
+  const loginModal = document.getElementById("loginModal");
+  const pinInput = document.getElementById("adminPin");
+  if (loginModal) {
+    loginModal.classList.add("hidden");
+    loginModal.style.display = "none";
+  }
+  if (pinInput) {
+    pinInput.value = "";
+  }
+}
+
+function loginAdmin() {
+  const pinInput = document.getElementById("adminPin");
+  const loginModal = document.getElementById("loginModal");
+  
+  if (!pinInput || !loginModal) return;
+
+  if (pinInput.value === "2580") {
+    // Esconde o painel imediatamente da tela
+    loginModal.classList.add("hidden");
+    loginModal.style.display = "none";
+    pinInput.value = "";
+    
+    // Executa o carregamento dos dados do painel se a função existir
+    if (typeof renderizarPainel === "function") renderizarPainel();
+    if (typeof atualizarDados === "function") atualizarDados();
+  } else {
+    alert("PIN incorreto. Tente novamente.");
+    pinInput.value = "";
+    pinInput.focus();
+  }
+}
+
+// Permite entrar apertando a tecla Enter do teclado
+document.getElementById("adminPin")?.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    loginAdmin();
+  }
+});
+
 
 <script>
 const DB_NAME="ALVES.AnalisesV8DB", DB_VERSION=2;
