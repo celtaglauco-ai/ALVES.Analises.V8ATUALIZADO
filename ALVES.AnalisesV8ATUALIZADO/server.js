@@ -19,4 +19,4 @@ app.post("/api/leagues/:id/csv",admin,upload.single("file"),(req,res)=>{const l=
 app.get("/api/users",admin,(req,res)=>res.json(db.prepare("SELECT id,name,email,role,status,created_at,last_login FROM users ORDER BY created_at DESC").all()));
 app.patch("/api/users/:id",admin,(req,res)=>{const id=+req.params.id;if(id===req.session.user.id&&req.body.status==="blocked")return res.status(400).json({error:"Não bloqueie sua própria conta."});db.prepare("UPDATE users SET status=COALESCE(?,status),role=COALESCE(?,role) WHERE id=?").run(req.body.status||null,req.body.role||null,id);res.json({ok:true})});
 app.delete("/api/users/:id",admin,(req,res)=>{const id=+req.params.id;if(id===req.session.user.id)return res.status(400).json({error:"Não exclua sua própria conta."});db.prepare("DELETE FROM users WHERE id=?").run(id);res.json({ok:true})});
-app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"public","index.html")));app.listen(PORT,()=>console.log("ALVES.AnalisesV8 em http://localhost:"+PORT));
+app.get("(.*)",(req,res)=>res.sendFile(path.join(ROOT,"public","index.html")));app.listen(PORT,()=>console.log("ALVES.AnalisesV8 em http://localhost:"+PORT));
